@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Random Password Generator with Dark Mode</title>
+    <style>
+        /* General styles for the body */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f0f0f0;
+            transition: background-color 0.3s;
+        }
+
+        /* Styling for the main generator container */
+        .generator {
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            background: #fff;
+            text-align: center;
+            transition: background 0.3s, box-shadow 0.3s;
+        }
+
+        /* Styling for the password display area */
+        #password {
+            font-size: 1.2em;
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            width: 300px;
+            transition: border 0.3s, background-color 0.3s;
+        }
+
+        /* Styling for buttons */
+        button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            border-radius: 5px;
+            border: none;
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        /* Styling for the options area */
+        .options {
+            margin-top: 10px;
+        }
+
+        /* Styling for individual labels and checkboxes */
+        label {
+            margin: 10px;
+        }
+
+        /* Flex layout for option items */
+        .option-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+
+        /* Margin for input elements inside options */
+        .option-item input {
+            margin-left: 5px;
+        }
+
+        /* Password length selector styling */
+        .length-selector {
+            margin-top: 10px;
+        }
+
+        /* Dark mode styles */
+        body.dark-mode {
+            background-color: #121212;
+            color: #ffffff;
+        }
+
+        .generator.dark-mode {
+            background: #1e1e1e;
+            box-shadow: 0 2px 10px rgba(255, 255, 255, 0.1);
+        }
+
+        .generator.dark-mode #password {
+            border: 1px solid #555;
+            background: #333;
+            color: #fff;
+        }
+
+        /* Copy button specific styles */
+        .copy-button {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            padding: 10px;
+            margin-left: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .copy-button:hover {
+            background-color: #218838;
+        }
+
+        /* Layout for password input and copy button */
+        .password-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        /* Styles for the dark mode toggle switch */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+            margin: 10px;
+        }
+
+        .switch input { 
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: #2196F3;
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+    </style>
+</head>
+<body>
+    <div class="generator">
+        <h2>Random Password Generator</h2>
+        <!-- Dark mode toggle -->
+        <label class="switch">
+            <input type="checkbox" id="darkModeToggle">
+            <span class="slider round"></span>
+        </label>
+        <!-- Password display and copy button -->
+        <div class="password-container">
+            <input type="text" id="password" readonly>
+            <button class="copy-button" onclick="copyPassword()">Copy</button>
+        </div>
+        <!-- Button to generate the password -->
+        <button onclick="generatePassword()">Generate Password</button>
+        <!-- Password length selector -->
+        <div class="length-selector">
+            <label for="length">Length:</label>
+            <input type="number" id="length" min="4" max="20" value="12">
+        </div>
+        <!-- Options for password characters -->
+        <div class="options">
+            <div class="option-item">
+                <label><input type="checkbox" id="uppercase" checked> Uppercase Letters</label>
+            </div>
+            <div class="option-item">
+                <label><input type="checkbox" id="lowercase" checked> Lowercase Letters</label>
+            </div>
+            <div class="option-item">
+                <label><input type="checkbox" id="numbers" checked> Numbers</label>
+            </div>
+            <div class="option-item">
+                <label><input type="checkbox" id="symbols"> Symbols</label>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Function to generate a random password
+        function generatePassword() {
+            // Define character sets
+            const uppercaseChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+            const lowercaseChars = 'abcdefghijklmnopqrstuvwxyz';
+            const numberChars = '0123456789';
+            const symbolChars = '!@#$%^&*()_+~`|}{[]:;?><,./-=';
+            let characters = '';
+            let password = '';
+
+            // Add selected character types to the pool
+            if (document.getElementById('uppercase').checked) characters += uppercaseChars;
+            if (document.getElementById('lowercase').checked) characters += lowercaseChars;
+            if (document.getElementById('numbers').checked) characters += numberChars;
+            if (document.getElementById('symbols').checked) characters += symbolChars;
+
+            // Generate password
+            const passwordLength = document.getElementById('length').value || 12;
+            if (characters.length === 0) {
+                alert('Please select at least one character type.');
+                return;
+            }
+            for (let i = 0; i < passwordLength; i++) {
+                password += characters.charAt(Math.floor(Math.random() * characters.length));
+            }
+
+            // Display the generated password
+            document.getElementById('password').value = password;
+        }
+
+        // Function to copy the password to clipboard
+        function copyPassword() {
+            const passwordInput = document.getElementById('password');
+            passwordInput.select();
+            passwordInput.setSelectionRange(0, 99999); // For mobile devices
+            document.execCommand('copy');
+            alert('Password copied to clipboard!');
+        }
+
+        // Dark mode toggle functionality
+        document.getElementById('darkModeToggle').addEventListener('change', function(event) {
+            document.body.classList.toggle('dark-mode', event.target.checked);
+            document.querySelector('.generator').classList.toggle('dark-mode', event.target.checked);
+        });
+    </script>
+</body>
+</html>
